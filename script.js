@@ -428,11 +428,11 @@ const humanQuestions = [
   },
   {
     id: 'cancer_history',
-    text: 'Have you ever been diagnosed with cancer?',
+    text: 'What is your cancer status?',
     input: `<div class="options">
-      <button class="option-btn" data-value="no">No</button>
-      <button class="option-btn" data-value="yes">Yes</button>
-      
+      <button class="option-btn" data-value="no">I don't have cancer</button>
+      <button class="option-btn" data-value="recovered">I have recovered from cancer</button>
+      <button class="option-btn" data-value="yes">I have cancer</button>
     </div>`
   },
   // Medical history questions
@@ -496,10 +496,24 @@ const ratQuestions = [
     text: 'What is your weight?',
     input: `<div class="weight-input" id="weight-input-group">
       <div id="weight-imperial">
-        <input type="number" id="weight-lb" class="input-field" placeholder="Pounds" min="0.1" max="2" step="0.1">
+        <div class="slider-container">
+          <input type="range" id="weight-lb" class="weight-slider" min="0.33" max="1.76" step="0.01" value="0.5">
+          <div class="slider-labels">
+            <span>0.33 lbs (5.3 oz)</span>
+            <span id="weight-lb-display">0.5 lbs</span>
+            <span>1.76 lbs (28.2 oz)</span>
+          </div>
+        </div>
       </div>
       <div id="weight-metric" style="display:none;">
-        <input type="number" id="weight-kg" class="input-field" placeholder="Kilograms" min="0.05" max="1" step="0.01">
+        <div class="slider-container">
+          <input type="range" id="weight-kg" class="weight-slider" min="0.15" max="0.8" step="0.01" value="0.23">
+          <div class="slider-labels">
+            <span>0.15 kg (150g)</span>
+            <span id="weight-kg-display">0.23 kg</span>
+            <span>0.8 kg (800g)</span>
+          </div>
+        </div>
       </div>
       <div class="options" style="margin-top:0.5em;">
         <button class="option-btn" id="weight-unit-imperial" data-unit="imperial" style="border:2px solid #fff;">lb</button>
@@ -681,6 +695,44 @@ function showQuestion(idx) {
         nextBtn.clickHandler();
       }, { passive: false });
     }
+    
+    // Add slider event listeners
+    const lbSlider = document.getElementById('weight-lb');
+    const kgSlider = document.getElementById('weight-kg');
+    const lbDisplay = document.getElementById('weight-lb-display');
+    const kgDisplay = document.getElementById('weight-kg-display');
+    
+    if (lbSlider && lbDisplay) {
+      lbSlider.addEventListener('input', function() {
+        const value = parseFloat(this.value);
+        lbDisplay.textContent = value.toFixed(2) + ' lbs';
+        
+        // Update kg slider to match
+        if (kgSlider) {
+          const kgValue = value * 0.453592;
+          kgSlider.value = kgValue.toFixed(2);
+          if (kgDisplay) {
+            kgDisplay.textContent = kgValue.toFixed(2) + ' kg';
+          }
+        }
+      });
+    }
+    
+    if (kgSlider && kgDisplay) {
+      kgSlider.addEventListener('input', function() {
+        const value = parseFloat(this.value);
+        kgDisplay.textContent = value.toFixed(2) + ' kg';
+        
+        // Update lb slider to match
+        if (lbSlider) {
+          const lbValue = value * 2.20462;
+          lbSlider.value = lbValue.toFixed(2);
+          if (lbDisplay) {
+            lbDisplay.textContent = lbValue.toFixed(2) + ' lbs';
+          }
+        }
+      });
+    }
   }
   if (idx > 0) {
     const backBtn = document.getElementById('back-btn');
@@ -816,6 +868,15 @@ function handleNext(id) {
       weightKg = weightLb * 0.453592;
     }
     answers.weight = weightKg;
+    // BMI early exit logic
+    if (isHuman && answers.height && answers.weight) {
+      const heightM = answers.height / 100;
+      const bmi = answers.weight / (heightM * heightM);
+      if (bmi < 13 || (bmi >= 13 && bmi < 15) || bmi > 100) {
+        showResults();
+        return;
+      }
+    }
   }
   current++;
   if (current < questions.length) {
@@ -830,8 +891,10 @@ function showResults() {
   document.getElementById('results').classList.remove('hidden');
   document.getElementById('results').classList.add('active');
 
-  console.log('All answers:', answers);
-  console.log('Species:', isHuman ? 'Human' : 'Rat');
+  // Hide all stats by default, will show if not early BMI exit
+  document.querySelector('.stats').style.display = 'none';
+  document.getElementById('discord-info').style.display = 'none';
+  let customBMIMessage = '';
 
   let expectancy;
   let bmi = null;
@@ -849,179 +912,268 @@ function showResults() {
       expectancy = BASELINE[answers.country][answers.gender];
     }
 
+    // BMI early exit logic
+    if (bmi < 13) {
+      expectancy = 1;
+      customBMIMessage = 'Your BMI is critically low. You will die within a year.';
+    } else if (bmi >= 13 && bmi < 15) {
+      expectancy = 6.5;
+      customBMIMessage = 'Your BMI is dangerously low. You will die in ' + expectancy + ' years.';
+    } else if (bmi > 100) {
+      expectancy = 15;
+      customBMIMessage = 'Your BMI is extremely high. You will die in 15 years.';
+    }
+
+    if (customBMIMessage) {
+      // Show the message in the results container, but always show stats and death clock
+      document.querySelector('.stats').style.display = '';
+      let resultContainer = document.querySelector('.result-container');
+      let customMsgDiv = document.getElementById('custom-bmi-message');
+      if (!customMsgDiv) {
+        customMsgDiv = document.createElement('div');
+        customMsgDiv.id = 'custom-bmi-message';
+        customMsgDiv.style.margin = '2em 0';
+        customMsgDiv.style.fontSize = '1.3em';
+        customMsgDiv.style.color = '#ff5555';
+        resultContainer.insertBefore(customMsgDiv, resultContainer.querySelector('.death-clock').previousSibling);
+      }
+      customMsgDiv.textContent = customBMIMessage;
+      
+      // Skip all other calculations for critical BMI cases
+      console.log('Final expectancy (critical BMI):', expectancy);
+      
+      // Apply minimum limitation - cannot be less than 1.5 years from today
+      const now = new Date();
+      const minimumYearsLeft = 1.5;
+      
+      if (expectancy < minimumYearsLeft) {
+        expectancy = minimumYearsLeft;
+        console.log('Applied minimum limitation for critical BMI: 1.5 years from today');
+      }
+      
+      document.getElementById('life-expectancy').textContent = expectancy.toFixed(1) + ' years';
+      
+      // Calculate years left - START COUNTING FROM TODAY
+      let yearsLeft = expectancy; // For critical BMI, years left = expectancy directly
+      const monthsLeft = Math.floor(yearsLeft * 12) % 12;
+      const daysLeft = Math.floor((yearsLeft * 365.25) % 30.44);
+      document.getElementById('years-left').textContent = Math.floor(yearsLeft);
+      document.getElementById('months-left').textContent = monthsLeft;
+      document.getElementById('days-left').textContent = daysLeft;
+
+      // Predicted death date - Add years left to current date
+      const deathDate = new Date(now.getFullYear() + Math.floor(yearsLeft), now.getMonth(), now.getDate());
+      
+      // Ensure death date is not in the past
+      if (deathDate <= now) {
+        // If death date would be in the past, set it to minimum 1.5 years from now
+        const safeDeathDate = new Date(now.getFullYear() + Math.floor(minimumYearsLeft), now.getMonth(), now.getDate());
+        document.getElementById('death-date').textContent = safeDeathDate.toDateString();
+        console.log('Death date adjusted to prevent past date (critical BMI)');
+      } else {
+        document.getElementById('death-date').textContent = deathDate.toDateString();
+      }
+      return;
+    } else {
+      // Remove custom message if present
+      let customMsgDiv = document.getElementById('custom-bmi-message');
+      if (customMsgDiv) customMsgDiv.remove();
+      document.querySelector('.stats').style.display = '';
+    }
+
     console.log('Baseline expectancy:', expectancy);
 
     // Medical conditions - ONLY penalties for having them
     if (answers.hypertension === 'yes') {
-      expectancy -= 3;
-      console.log('Hypertension penalty applied (-3)');
+      expectancy -= 2.5;
+      console.log('Hypertension penalty applied (-2.5)');
     }
     if (answers.diabetes === 'yes') {
-      expectancy -= 15;
-      console.log('Diabetes penalty applied (-15)');
+      expectancy -= 8.5;
+      console.log('Diabetes penalty applied (-8.5)');
     }
     if (answers.cholesterol === 'yes') {
-      expectancy -= 7;
-      console.log('Cholesterol penalty applied (-7)');
+      expectancy -= 5.5;
+      console.log('Cholesterol penalty applied (-5.5)');
     }
 
     // Smoking - MASSIVE bonuses for not smoking, penalties for smoking
     if (answers.smoke === 'heavy') {
-      expectancy -= 20;
-      console.log('Heavy smoking penalty applied (-20)');
+      expectancy -= 17.5;
+      console.log('Heavy smoking penalty applied (-17.5)');
     } else if (answers.smoke === 'moderate') {
-      expectancy -= 12;
-      console.log('Moderate smoking penalty applied (-12)');
+      expectancy -= 9.5;
+      console.log('Moderate smoking penalty applied (-9.5)');
     } else if (answers.smoke === 'light') {
-      expectancy -= 7;
-      console.log('Light smoking penalty applied (-7)');
+      expectancy -= 5.5;
+      console.log('Light smoking penalty applied (-5.5)');
     } else if (answers.smoke === 'former') {
-      expectancy -= 5;
-      console.log('Former smoker penalty applied (-5)');
+      expectancy -= 3.5;
+      console.log('Former smoker penalty applied (-3.5)');
     } else {
-      expectancy += 10; // MASSIVE bonus for never smoking
-      console.log('Never smoked - MASSIVE bonus (+10)');
+      expectancy += 3.5; // MASSIVE bonus for never smoking
+      console.log('Never smoked - MASSIVE bonus (+3.5)');
     }
 
     // Alcohol - MASSIVE bonuses for healthy drinking, penalties for heavy
     if (answers.alcohol === 'heavy') {
-      expectancy -= 15;
-      console.log('Heavy alcohol penalty applied (-15)');
+      expectancy -= 12.5;
+      console.log('Heavy alcohol penalty applied (-12.5)');
     } else if (answers.alcohol === 'moderate') {
-      expectancy -= 5;
-      console.log('Moderate alcohol penalty applied (-5)');
+      expectancy -= 4.5;
+      console.log('Moderate alcohol penalty applied (-4.5)');
     } else if (answers.alcohol === 'modest') {
-      expectancy -= 3;
-      console.log('Modest alcohol penalty applied (-3)');
+      expectancy -= 2.5;
+      console.log('Modest alcohol penalty applied (-2.5)');
     } else {
-      expectancy += 5; // Bonus for never drinking
-      console.log('Never drinks - bonus (+5)');
+      expectancy += 2.5; // Bonus for never drinking
+      console.log('Never drinks - bonus (+2.5)');
     }
 
     // Physical activity - MASSIVE bonuses for exercise
     if (answers.exercise === '0') {
-      expectancy -= 5;
-      console.log('No exercise penalty applied (-5)');
+      expectancy -= 3.5;
+      console.log('No exercise penalty applied (-3.5)');
     } else if (answers.exercise === '1-2') {
-      expectancy += 7; // Bonus for some exercise
-      console.log('1-2 exercise bonus applied (+7)');
+      expectancy += 3.5; // Bonus for some exercise
+      console.log('1-2 exercise bonus applied (+3.5)');
     } else if (answers.exercise === '3-4') {
-      expectancy += 11; // MASSIVE bonus
-      console.log('3-4 exercise bonus applied (+11)');
+      expectancy += 4.5; // MASSIVE bonus
+      console.log('3-4 exercise bonus applied (+4.5)');
     } else if (answers.exercise === '5+') {
-      expectancy += 16; // HUGE bonus
-      console.log('5+ exercise bonus applied (+16)');
+      expectancy += 6.5; // HUGE bonus
+      console.log('5+ exercise bonus applied (+6.5)');
     }
 
-    // BMI - MASSIVE penalties for obesity, bonuses for healthy BMI
-    if (bmi < 18.5) {
-      expectancy -= 2; // Underweight
-      console.log('BMI underweight penalty applied (-2)');
-    } else if (bmi >= 25 && bmi < 30) {
-      expectancy += 2; // Bonus for slightly overweight
-      console.log('BMI overweight bonus applied (+2)');
+    // BMI rules for non-critical cases
+    if (bmi >= 15 && bmi < 17) {
+      expectancy -= 7.5;
+      console.log('BMI 15-17: Lose 7.5 years of expectancy');
+    } else if (bmi >= 17 && bmi < 20) {
+      expectancy -= 1.5;
+      console.log('BMI 17-20: Lose 1.5 years of expectancy');
+    } else if (bmi >= 20 && bmi < 22) {
+      expectancy += 2.5;
+      console.log('BMI 20-22: Gain 2.5 years of expectancy');
+    } else if (bmi >= 22 && bmi < 25) {
+      expectancy += 1.5;
+      console.log('BMI 22-25: Gain 1.5 years of expectancy');
+    } else if (bmi >= 25 && bmi < 27) {
+      expectancy -= 2.5;
+      console.log('BMI 25-27: Lose 2.5 years of expectancy');
+    } else if (bmi >= 27 && bmi < 30) {
+      expectancy -= 3.5;
+      console.log('BMI 27-30: Lose 3.5 years of expectancy');
     } else if (bmi >= 30 && bmi < 35) {
-      expectancy -= 15; // MASSIVE penalty for Class I obesity
-      console.log('BMI Class I obesity MASSIVE penalty applied (-15)');
+      expectancy -= 4.5;
+      console.log('BMI 30-35: Lose 4.5 years of expectancy');
     } else if (bmi >= 35 && bmi < 40) {
-      expectancy -= 20; // HUGE penalty for Class II obesity
-      console.log('BMI Class II obesity HUGE penalty applied (-20)');
-    } else if (bmi >= 40) {
-      expectancy -= 35; // DEVASTATING penalty for Class III obesity
-      console.log('BMI Class III obesity DEVASTATING penalty applied (-35)');
-    } else {
-      expectancy += 10; // MASSIVE bonus for healthy BMI
-      console.log('BMI in healthy range - MASSIVE bonus (+10)');
+      expectancy -= 6.5;
+      console.log('BMI 35-40: Lose 6.5 years of expectancy');
+    } else if (bmi >= 40 && bmi < 50) {
+      expectancy -= 8.5;
+      console.log('BMI 40-50: Lose 8.5 years of expectancy');
+    } else if (bmi >= 50 && bmi < 60) {
+      expectancy -= 12.5;
+      console.log('BMI 50-60: Lose 12.5 years of expectancy');
+    } else if (bmi >= 70 && bmi < 80) {
+      expectancy -= 16.5;
+      console.log('BMI 70-80: Lose 16.5 years of expectancy');
+    } else if (bmi >= 80 && bmi < 90) {
+      expectancy -= 23.5;
+      console.log('BMI 80-90: Lose 23.5 years of expectancy');
     }
 
     // New health factors
     // Fruits & vegetables
     if (answers.fruits_vegetables === '0-1') {
-      expectancy -= 5;
-      console.log('Low fruit/vegetable penalty applied (-5)');
+      expectancy -= 3.5;
+      console.log('Low fruit/vegetable penalty applied (-3.5)');
     } else if (answers.fruits_vegetables === '2-3') {
-      expectancy += 3;
-      console.log('Moderate fruit/vegetable bonus applied (+3)');
+      expectancy += 4.5;
+      console.log('Moderate fruit/vegetable bonus applied (+4.5)');
     } else if (answers.fruits_vegetables === '4+') {
-      expectancy += 8;
-      console.log('High fruit/vegetable bonus applied (+8)');
+      expectancy += 7.5;
+      console.log('High fruit/vegetable bonus applied (+7.5)');
     }
 
     // Sleep
     if (answers.sleep === 'less_than_5') {
-      expectancy -= 8;
-      console.log('Very low sleep penalty applied (-8)');
+      expectancy -= 9.5;
+      console.log('Very low sleep penalty applied (-9.5)');
     } else if (answers.sleep === '5-6') {
-      expectancy -= 3;
-      console.log('Low sleep penalty applied (-3)');
+      expectancy -= 3.5;
+      console.log('Low sleep penalty applied (-3.5)');
     } else if (answers.sleep === '7-8') {
-      expectancy += 7;
-      console.log('Optimal sleep bonus applied (+7)');
+      expectancy += 6.5;
+      console.log('Optimal sleep bonus applied (+6.5)');
     } else if (answers.sleep === 'more_than_8') {
-      expectancy += 10;
-      console.log('Excessive sleep bonus applied (+10)');
+      expectancy += 7.5;
+      console.log('Excessive sleep bonus applied (+7.5)');
     }
 
     // Stress
     if (answers.stress === 'low') {
-      expectancy += 6;
-      console.log('Low stress bonus applied (+6)');
+      expectancy += 3.5;
+      console.log('Low stress bonus applied (+3.5)');
     } else if (answers.stress === 'moderate') {
-      expectancy += 1;
-      console.log('Moderate stress bonus applied (+1)');
+      expectancy -= 1.5;
+      console.log('Moderate stress bonus applied (-1.5)');
     } else if (answers.stress === 'high') {
-      expectancy -= 5;
-      console.log('High stress penalty applied (-5)');
+      expectancy -= 6.5;
+      console.log('High stress penalty applied (-6.5)');
     }
 
     // Sitting time
     if (answers.sitting === '0-4') {
-      expectancy += 4;
-      console.log('Low sitting time bonus applied (+4)');
+      expectancy += 3.5;
+      console.log('Low sitting time bonus applied (+3.5)');
     } else if (answers.sitting === '5-8') {
-      expectancy += 1;
-      console.log('Moderate sitting time bonus applied (+1)');
+      expectancy -= 1.5;
+      console.log('Moderate sitting time bonus applied (-1.5)');
     } else if (answers.sitting === '9-12') {
-      expectancy -= 2;
-      console.log('High sitting time penalty applied (-2)');
+      expectancy -= 3.5;
+      console.log('High sitting time penalty applied (-3.5)');
     } else if (answers.sitting === 'more_than_12') {
-      expectancy -= 4;
-      console.log('Very high sitting time penalty applied (-4)');
+      expectancy -= 5.5;
+      console.log('Very high sitting time penalty applied (-5.5)');
     }
 
     // Family early death history
     if (answers.family_early_death === 'yes') {
-      expectancy -= 5;
-      console.log('Family early death penalty applied (-5)');
+      expectancy -= 4.5;
+      console.log('Family early death penalty applied (-4.5)');
     } else {
-      expectancy += 3;
-      console.log('No family early death bonus applied (+3)');
+      expectancy += 2.5;
+      console.log('No family early death bonus applied (+2.5)');
     }
 
     // Family longevity
     if (answers.family_longevity === 'majority') {
-      expectancy += 6;
-      console.log('Family longevity bonus applied (+6)');
+      expectancy += 6.5;
+      console.log('Family longevity bonus applied (+6.5)');
     } else if (answers.family_longevity === 'some') {
-      expectancy += 3;
-      console.log('Some family longevity bonus applied (+3)');
+      expectancy += 2.5;
+      console.log('Some family longevity bonus applied (+2.5)');
     } else if (answers.family_longevity === 'rarely') {
-      expectancy -= 1;
-      console.log('Rare family longevity penalty applied (-1)');
+      expectancy -= 1.5;
+      console.log('Rare family longevity penalty applied (-1.5)');
     }
 
     // Cancer history
     if (answers.cancer_history === 'yes') {
-      expectancy -= 12;
-      console.log('Cancer history penalty applied (-12)');
+      expectancy -= 12.5;
+      console.log('Current cancer penalty applied (-12.5)');
+    } else if (answers.cancer_history === 'recovered') {
+      expectancy -= 3.5;
+      console.log('Recovered from cancer penalty applied (-3.5)');
     } else {
-      expectancy += 2;
-      console.log('No cancer history bonus applied (+2)');
+      expectancy += 2.5;
+      console.log('No cancer history bonus applied (+2.5)');
     }
 
     // Clamp - Much higher bounds
-    if (expectancy < 60) expectancy = 60;
-    if (expectancy > 120) expectancy = 120;
+    if (expectancy > 125) expectancy = 125;
 
   } else {
     // Rat calculations
@@ -1157,23 +1309,37 @@ function showResults() {
 
   console.log('Final expectancy:', expectancy);
 
+  // Apply minimum limitation - cannot be less than 1.5 years from today
+  const now = new Date();
+  const minimumYearsLeft = 1.5;
+  
+  if (expectancy < minimumYearsLeft) {
+    expectancy = minimumYearsLeft;
+    console.log('Applied minimum limitation: 1.5 years from today');
+  }
+
   document.getElementById('life-expectancy').textContent = expectancy.toFixed(1) + ' years';
 
-  // Calculate years left
-  const birth = new Date(answers.birthdate);
-  const now = new Date();
-  const age = (now - birth) / (365.25 * 24 * 60 * 60 * 1000);
-  let yearsLeft = expectancy - age;
-  if (yearsLeft < 0) yearsLeft = 0;
+  // Calculate years left - START COUNTING FROM TODAY
+  let yearsLeft = expectancy; // Years left = expectancy directly, starting from today
   const monthsLeft = Math.floor(yearsLeft * 12) % 12;
   const daysLeft = Math.floor((yearsLeft * 365.25) % 30.44);
   document.getElementById('years-left').textContent = Math.floor(yearsLeft);
   document.getElementById('months-left').textContent = monthsLeft;
   document.getElementById('days-left').textContent = daysLeft;
 
-  // Predicted death date
-  const deathDate = new Date(birth.getFullYear() + expectancy, birth.getMonth(), birth.getDate());
-  document.getElementById('death-date').textContent = deathDate.toDateString();
+  // Predicted death date - Add years left to current date
+  const deathDate = new Date(now.getFullYear() + Math.floor(yearsLeft), now.getMonth(), now.getDate());
+  
+  // Ensure death date is not in the past
+  if (deathDate <= now) {
+    // If death date would be in the past, set it to minimum 1.5 years from now
+    const safeDeathDate = new Date(now.getFullYear() + Math.floor(minimumYearsLeft), now.getMonth(), now.getDate());
+    document.getElementById('death-date').textContent = safeDeathDate.toDateString();
+    console.log('Death date adjusted to prevent past date');
+  } else {
+    document.getElementById('death-date').textContent = deathDate.toDateString();
+  }
 }
 
 function restartQuiz() {
