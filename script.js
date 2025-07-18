@@ -614,6 +614,7 @@ let questions = [speciesQuestion];
 let answers = {};
 let current = 0;
 let isHuman = null;
+let privacyMode = false; // Track privacy setting
 
 function showQuestion(idx) {
   const q = questions[idx];
@@ -915,6 +916,26 @@ function handleNext(id) {
     } else {
       // Use the manually entered date
       answers.birthdate = val;
+      
+      // Validate age (must be between 18 and 100)
+      const birthDate = new Date(val);
+      const now = new Date();
+      const age = now.getFullYear() - birthDate.getFullYear();
+      const monthDiff = now.getMonth() - birthDate.getMonth();
+      const dayDiff = now.getDate() - birthDate.getDate();
+      
+      // Adjust age if birthday hasn't occurred this year
+      const adjustedAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
+      
+      if (adjustedAge < 18 || adjustedAge > 60) {
+        // Invalid age - shake the input
+        const birthdateInput = document.getElementById('birthdate');
+        birthdateInput.classList.add('shake');
+        setTimeout(() => {
+          birthdateInput.classList.remove('shake');
+        }, 500);
+        return;
+      }
     }
   } else if (id === 'country') {
     const val = document.getElementById('country').value;
@@ -971,6 +992,10 @@ function showResults() {
   document.getElementById('discord-info').style.display = 'none';
   let customBMIMessage = '';
 
+  // Always reset stat-item visibility
+  const statItems = document.querySelectorAll('.stat-item');
+  statItems.forEach(item => item.style.display = '');
+
   let expectancy;
   let bmi = null;
 
@@ -978,8 +1003,6 @@ function showResults() {
     // Human calculations
     const heightM = answers.height / 100;
     bmi = answers.weight / (heightM * heightM);
-    document.getElementById('bmi-label').textContent = 'Your BMI';
-    document.getElementById('bmi-result').textContent = bmi.toFixed(1);
 
     // Life expectancy baseline
     expectancy = 80;
@@ -1000,7 +1023,6 @@ function showResults() {
     }
 
     if (customBMIMessage) {
-      // Show the message in the results container, but always show stats and death clock
       document.querySelector('.stats').style.display = '';
       let resultContainer = document.querySelector('.result-container');
       let customMsgDiv = document.getElementById('custom-bmi-message');
@@ -1013,21 +1035,15 @@ function showResults() {
         resultContainer.insertBefore(customMsgDiv, resultContainer.querySelector('.death-clock').previousSibling);
       }
       customMsgDiv.textContent = customBMIMessage;
-      
       // Skip all other calculations for critical BMI cases
       console.log('Final expectancy (critical BMI):', expectancy);
-      
       // Apply minimum limitation - cannot be less than 1.5 years from today
       const now = new Date();
       const minimumYearsLeft = 1.5;
-      
       if (expectancy < minimumYearsLeft) {
         expectancy = minimumYearsLeft;
         console.log('Applied minimum limitation for critical BMI: 1.5 years from today');
       }
-      
-      document.getElementById('life-expectancy').textContent = expectancy.toFixed(1) + ' years';
-      
       // Calculate years left - START COUNTING FROM TODAY
       let yearsLeft = expectancy; // For critical BMI, years left = expectancy directly
       const monthsLeft = Math.floor(yearsLeft * 12) % 12;
@@ -1035,13 +1051,28 @@ function showResults() {
       document.getElementById('years-left').textContent = Math.floor(yearsLeft);
       document.getElementById('months-left').textContent = monthsLeft;
       document.getElementById('days-left').textContent = daysLeft;
-
+      // Calculate actual life expectancy (current age + years left)
+      let actualLifeExpectancy = yearsLeft;
+      if (answers.birthdate) {
+        const birthDate = new Date(answers.birthdate);
+        const currentAge = now.getFullYear() - birthDate.getFullYear();
+        const monthDiff = now.getMonth() - birthDate.getMonth();
+        const dayDiff = now.getDate() - birthDate.getDate();
+        const adjustedAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? currentAge - 1 : currentAge;
+        actualLifeExpectancy = adjustedAge + yearsLeft;
+      }
+      // PRIVACY: Hide stat sections if privacyMode
+      if (privacyMode) {
+        document.querySelector('.stat-item:nth-child(1)').style.display = 'none';
+        document.querySelector('.stat-item:nth-child(2)').style.display = 'none';
+      } else {
+        document.getElementById('life-expectancy').textContent = actualLifeExpectancy.toFixed(1) + ' years';
+        document.getElementById('bmi-label').textContent = 'Your BMI';
+        document.getElementById('bmi-result').textContent = bmi.toFixed(1);
+      }
       // Predicted death date - Add years left to current date
       const deathDate = new Date(now.getFullYear() + Math.floor(yearsLeft), now.getMonth(), now.getDate());
-      
-      // Ensure death date is not in the past
       if (deathDate <= now) {
-        // If death date would be in the past, set it to minimum 1.5 years from now
         const safeDeathDate = new Date(now.getFullYear() + Math.floor(minimumYearsLeft), now.getMonth(), now.getDate());
         document.getElementById('death-date').textContent = safeDeathDate.toDateString();
         console.log('Death date adjusted to prevent past date (critical BMI)');
@@ -1050,7 +1081,6 @@ function showResults() {
       }
       return;
     } else {
-      // Remove custom message if present
       let customMsgDiv = document.getElementById('custom-bmi-message');
       if (customMsgDiv) customMsgDiv.remove();
       document.querySelector('.stats').style.display = '';
@@ -1371,8 +1401,13 @@ function showResults() {
     if (expectancy > 5) expectancy = 5;
 
     // For rats, show weight instead of BMI
-    document.getElementById('bmi-label').textContent = 'Your Weight';
-    document.getElementById('bmi-result').textContent = (answers.weight * 2.20462).toFixed(2) + ' lbs';
+    if (privacyMode) {
+      document.querySelector('.stat-item:nth-child(1)').style.display = 'none';
+      document.querySelector('.stat-item:nth-child(2)').style.display = 'none';
+    } else {
+      document.getElementById('bmi-label').textContent = 'Your Weight';
+      document.getElementById('bmi-result').textContent = (answers.weight * 2.20462).toFixed(2) + ' lbs';
+    }
     
     // Show stats for rats
     document.querySelector('.stats').style.display = '';
@@ -1396,8 +1431,6 @@ function showResults() {
     console.log('Applied minimum limitation: 1.5 years from today');
   }
 
-  document.getElementById('life-expectancy').textContent = expectancy.toFixed(1) + ' years';
-
   // Calculate years left - START COUNTING FROM TODAY
   let yearsLeft = expectancy; // Years left = expectancy directly, starting from today
   const monthsLeft = Math.floor(yearsLeft * 12) % 12;
@@ -1405,6 +1438,36 @@ function showResults() {
   document.getElementById('years-left').textContent = Math.floor(yearsLeft);
   document.getElementById('months-left').textContent = monthsLeft;
   document.getElementById('days-left').textContent = daysLeft;
+
+  // Calculate actual life expectancy (current age + years left)
+  let actualLifeExpectancy = yearsLeft;
+  if (isHuman && answers.birthdate) {
+    const birthDate = new Date(answers.birthdate);
+    const currentAge = now.getFullYear() - birthDate.getFullYear();
+    const monthDiff = now.getMonth() - birthDate.getMonth();
+    const dayDiff = now.getDate() - birthDate.getDate();
+    
+    // Adjust age if birthday hasn't occurred this year
+    const adjustedAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? currentAge - 1 : currentAge;
+    actualLifeExpectancy = adjustedAge + yearsLeft;
+  }
+
+  // PRIVACY: Handle display for humans
+  if (isHuman) {
+    if (privacyMode) {
+      // Hide the entire Life Expectancy and BMI sections
+      document.querySelector('.stat-item:nth-child(1)').style.display = 'none';
+      document.querySelector('.stat-item:nth-child(2)').style.display = 'none';
+    } else {
+      // Show everything normally
+      document.getElementById('life-expectancy').textContent = actualLifeExpectancy.toFixed(1) + ' years';
+      document.getElementById('bmi-label').textContent = 'Your BMI';
+      document.getElementById('bmi-result').textContent = bmi.toFixed(1);
+    }
+  } else {
+    // For rats, always show life expectancy (it's just years left)
+    document.getElementById('life-expectancy').textContent = actualLifeExpectancy.toFixed(1) + ' years';
+  }
 
   // Predicted death date - Add years left to current date
   const deathDate = new Date(now.getFullYear() + Math.floor(yearsLeft), now.getMonth(), now.getDate());
@@ -1424,13 +1487,28 @@ function restartQuiz() {
   answers = {};
   current = 0;
   isHuman = null;
+  privacyMode = false; // Reset privacy mode
   questions = [speciesQuestion];
   document.getElementById('results').classList.add('hidden');
   document.getElementById('results').classList.remove('active');
   document.getElementById('questionnaire').classList.remove('hidden');
-  showQuestion(0);
+  document.getElementById('privacy-notification').classList.remove('hidden');
+  document.getElementById('questionnaire').classList.add('hidden');
 }
 
 window.onload = () => {
-  showQuestion(0);
+  // Set up privacy notification handlers
+  document.getElementById('privacy-yes').addEventListener('click', () => {
+    privacyMode = true;
+    document.getElementById('privacy-notification').classList.add('hidden');
+    document.getElementById('questionnaire').classList.remove('hidden');
+    showQuestion(0);
+  });
+  
+  document.getElementById('privacy-no').addEventListener('click', () => {
+    privacyMode = false;
+    document.getElementById('privacy-notification').classList.add('hidden');
+    document.getElementById('questionnaire').classList.remove('hidden');
+    showQuestion(0);
+  });
 }; 
