@@ -10,11 +10,6 @@ body {
   padding: 1rem;
   box-sizing: border-box;
   width: 100%;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
 }
 
 .container {
@@ -127,41 +122,12 @@ body {
   min-height: 44px; /* Touch-friendly minimum height */
   min-width: 80px; /* Minimum width for touch targets */
   white-space: nowrap;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-  -webkit-appearance: none;
-  appearance: none;
 }
 .option-btn:hover, .next-btn:hover, .restart-btn:hover {
   background: #fff;
   color: #000;
   border: 2px solid #fff;
   transform: translateY(-2px) scale(1.04);
-}
-.option-btn:active, .next-btn:active, .restart-btn:active {
-  background: #fff;
-  color: #000;
-  border: 2px solid #fff;
-  transform: translateY(0) scale(0.98);
-}
-
-/* Prevent focus outlines and unwanted states */
-.option-btn:focus, .next-btn:focus, .restart-btn:focus {
-  outline: none;
-  background: none;
-  color: #fff;
-  border: 2px solid #fff;
-}
-
-/* Ensure buttons only show selected state when actually selected */
-.option-btn.selected, .next-btn.selected, .restart-btn.selected {
-  background: #fff;
-  color: #000;
-  border: 2px solid #fff;
 }
 
 .height-input, .weight-input {
@@ -280,12 +246,6 @@ body {
   .option-btn, .next-btn, .restart-btn {
     padding: 0.8em 1.2em;
     font-size: 0.95rem;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
   }
   
   .button-container {
