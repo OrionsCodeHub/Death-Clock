@@ -7,6 +7,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 1rem;
+  box-sizing: border-box;
 }
 
 .container {
@@ -22,8 +24,9 @@ body {
   border-radius: 0;
   box-shadow: none;
   padding: 0;
-  min-width: 340px;
-  max-width: 90vw;
+  min-width: 280px;
+  max-width: 100%;
+  width: 100%;
   transition: none;
 }
 
@@ -31,6 +34,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
 }
 
 .title {
@@ -42,11 +46,30 @@ body {
   text-align: center;
 }
 
+.question-step h2 {
+  text-align: center !important;
+  margin-bottom: 1.5em;
+  font-size: 1.5rem;
+  font-weight: 500;
+  width: 100%;
+  display: block;
+}
+
+#questions h2 {
+  text-align: center !important;
+  margin-bottom: 1.5em;
+  font-size: 1.5rem;
+  font-weight: 500;
+  width: 100%;
+  display: block;
+}
+
 .subtitle {
   font-size: 1.1rem;
   color: #aaa;
   margin-bottom: 2em;
   font-weight: 400;
+  text-align: center;
 }
 
 #questions > * {
@@ -70,6 +93,8 @@ body {
   box-sizing: border-box;
   outline: none;
   transition: border 0.2s;
+  position: relative;
+  z-index: 1;
 }
 .input-field:focus {
   border: 1.5px solid #fff;
@@ -81,6 +106,8 @@ body {
   gap: 1em;
   margin: 1.5em 0 2em 0;
   justify-content: center;
+  position: relative;
+  z-index: 10;
 }
 
 .button-container {
@@ -89,6 +116,7 @@ body {
   align-items: center;
   width: 100%;
   margin-top: 2em;
+  gap: 1rem;
 }
 
 .option-btn, .next-btn, .restart-btn {
@@ -103,6 +131,10 @@ body {
   cursor: pointer;
   box-shadow: none;
   transition: background 0.2s, color 0.2s, border 0.2s, transform 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  white-space: nowrap;
+  min-width: 80px;
 }
 .option-btn:hover, .next-btn:hover, .restart-btn:hover {
   background: #fff;
@@ -110,37 +142,67 @@ body {
   border: 2px solid #fff;
   transform: translateY(-2px) scale(1.04);
 }
+.option-btn:active, .next-btn:active, .restart-btn:active {
+  background: #fff;
+  color: #000;
+  border: 2px solid #fff;
+  transform: translateY(0) scale(0.98);
+}
 
 .height-input, .weight-input {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 1em;
-  justify-content: center;
   margin-bottom: 1.5em;
+  width: 100%;
 }
 .input-field.small {
   width: 80px;
 }
+#height-imperial {
+  display: flex;
+  gap: 0.5em;
+  justify-content: center;
+  margin-bottom: 0.5em;
+  flex-wrap: wrap;
+}
+#height-metric {
+  margin-bottom: 0.5em;
+}
 
 .results {
   display: none;
+  width: 100%;
 }
 .results.active {
   display: block;
+}
+
+.result-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
 .death-clock {
   margin: 2em 0 1em 0;
   display: flex;
   justify-content: center;
+  width: 100%;
 }
 .clock-face {
   display: flex;
   gap: 2em;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 .time-display {
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-width: 80px;
 }
 .time-display span {
   font-size: 2.2rem;
@@ -150,6 +212,7 @@ body {
   font-size: 1rem;
   color: #aaa;
   margin-top: 0.2em;
+  text-align: center;
 }
 
 .stats {
@@ -157,6 +220,8 @@ body {
   gap: 2em;
   justify-content: center;
   margin: 2em 0 1em 0;
+  flex-wrap: wrap;
+  width: 100%;
 }
 .stat-item {
   background: none;
@@ -164,8 +229,137 @@ body {
   padding: 1em 2em;
   box-shadow: none;
   text-align: center;
+  min-width: 120px;
 }
 
 .hidden {
   display: none !important;
+}
+
+/* Mobile Responsive Design */
+@media (max-width: 768px) {
+  body {
+    padding: 0.5rem;
+  }
+  
+  .title {
+    font-size: 2rem;
+    margin-bottom: 0.3em;
+  }
+  
+  .subtitle {
+    font-size: 1rem;
+    margin-bottom: 1.5em;
+  }
+  
+  .question-step h2,
+  #questions h2 {
+    font-size: 1.3rem;
+    margin-bottom: 1em;
+  }
+  
+  .input-field {
+    font-size: 1rem;
+    padding: 0.6em 0.8em;
+  }
+  
+  .option-btn, .next-btn, .restart-btn {
+    font-size: 1rem;
+    padding: 0.6em 1.5em;
+    margin: 0.3em 0;
+  }
+  
+  .options {
+    gap: 0.8em;
+    margin: 1em 0 1.5em 0;
+  }
+  
+  .button-container {
+    margin-top: 1.5em;
+    gap: 0.5rem;
+  }
+  
+  .clock-face {
+    gap: 1em;
+  }
+  
+  .time-display span {
+    font-size: 1.8rem;
+  }
+  
+  .time-label {
+    font-size: 0.9rem;
+  }
+  
+  .stats {
+    gap: 1em;
+    margin: 1.5em 0 1em 0;
+  }
+  
+  .stat-item {
+    padding: 0.8em 1.5em;
+    min-width: 100px;
+  }
+  
+  .stat-item h3 {
+    font-size: 0.9rem;
+    margin-bottom: 0.3em;
+  }
+  
+  .stat-item p {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.8rem;
+  }
+  
+  .question-step h2,
+  #questions h2 {
+    font-size: 1.2rem;
+  }
+  
+  .clock-face {
+    gap: 0.8em;
+  }
+  
+  .time-display span {
+    font-size: 1.6rem;
+  }
+  
+  .time-label {
+    font-size: 0.8rem;
+  }
+  
+  .stats {
+    flex-direction: column;
+    gap: 0.8em;
+  }
+  
+  .stat-item {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .button-container {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  
+  .option-btn, .next-btn, .restart-btn {
+    width: 100%;
+    max-width: 200px;
+  }
+  
+  .options {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .option-btn {
+    width: 100%;
+    max-width: 250px;
+  }
 } 
