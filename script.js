@@ -241,20 +241,20 @@ const humanQuestions = [
   {
     id: 'height',
     text: 'What is your height?',
-    input: `
-    <div class="weight-input" id="height-input-group">
+    input: `<div class="height-input" id="height-input-group">
       <div id="height-imperial">
-        <input type="number" id="height-ft" class="input-field" placeholder="Feet" min="2" max="8">
+        <input type="number" id="height-feet" class="input-field small" placeholder="Feet" min="3" max="8">
+        <input type="number" id="height-inches" class="input-field small" placeholder="Inches" min="0" max="11">
       </div>
       <div id="height-metric" style="display:none;">
         <input type="number" id="height-cm" class="input-field" placeholder="Centimeters" min="90" max="250">
       </div>
       <div class="options" style="margin-top:0.5em;">
-        <button class="option-btn" id="height-unit-imperial" data-unit="imperial">ft</button>
+        <button class="option-btn" id="height-unit-imperial" data-unit="imperial" style="border:2px solid #fff;">ft/in</button>
         <button class="option-btn" id="height-unit-metric" data-unit="metric">cm</button>
       </div>
     </div>`
-  }
+  },
   {
     id: 'weight',
     text: 'What is your weight?',
@@ -590,14 +590,15 @@ function handleNext(id) {
     if (!val) return;
     answers.country = val;
   } else if (id === 'height') {
-    let heightCm;
+    let heightCm = null;
     if (document.getElementById('height-metric').style.display !== 'none') {
       heightCm = parseFloat(document.getElementById('height-cm').value);
-      if (isNaN(heightCm)) return; 
+      if (isNaN(heightCm)) return;
     } else {
-      const feet = parseFloat(document.getElementById('height-ft').value);
-      if (isNaN(feet)) return;
-      heightCm = feet * 30.48;
+      const feet = parseInt(document.getElementById('height-feet').value, 10);
+      const inches = parseInt(document.getElementById('height-inches').value, 10);
+      if (isNaN(feet) || isNaN(inches)) return;
+      heightCm = feet * 30.48 + inches * 2.54;
     }
     answers.height = heightCm;
   } else if (id === 'weight') {
