@@ -595,6 +595,7 @@ function showQuestion(idx) {
     const nextBtn = document.getElementById('next-btn');
     if (nextBtn) {
       nextBtn.removeEventListener('click', nextBtn.clickHandler);
+      nextBtn.removeEventListener('touchend', nextBtn.touchHandler);
       
       nextBtn.clickHandler = () => {
         if (nextBtn.disabled) return;
@@ -603,6 +604,10 @@ function showQuestion(idx) {
         handleNext(q.id);
       };
       nextBtn.addEventListener('click', nextBtn.clickHandler);
+      nextBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        nextBtn.clickHandler();
+      }, { passive: false });
     }
     
     // Add Discord username validation on input
@@ -624,6 +629,7 @@ function showQuestion(idx) {
     const nextBtn = document.getElementById('next-btn');
     if (nextBtn) {
       nextBtn.removeEventListener('click', nextBtn.clickHandler);
+      nextBtn.removeEventListener('touchend', nextBtn.touchHandler);
       
       nextBtn.clickHandler = () => {
         if (nextBtn.disabled) return;
@@ -632,12 +638,17 @@ function showQuestion(idx) {
         handleNext(q.id);
       };
       nextBtn.addEventListener('click', nextBtn.clickHandler);
+      nextBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        nextBtn.clickHandler();
+      }, { passive: false });
     }
   }
   if (q.id === 'height') {
     const nextBtn = document.getElementById('next-btn');
     if (nextBtn) {
       nextBtn.removeEventListener('click', nextBtn.clickHandler);
+      nextBtn.removeEventListener('touchend', nextBtn.touchHandler);
       
       nextBtn.clickHandler = () => {
         if (nextBtn.disabled) return;
@@ -646,12 +657,17 @@ function showQuestion(idx) {
         handleNext(q.id);
       };
       nextBtn.addEventListener('click', nextBtn.clickHandler);
+      nextBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        nextBtn.clickHandler();
+      }, { passive: false });
     }
   }
   if (q.id === 'weight') {
     const nextBtn = document.getElementById('next-btn');
     if (nextBtn) {
       nextBtn.removeEventListener('click', nextBtn.clickHandler);
+      nextBtn.removeEventListener('touchend', nextBtn.touchHandler);
       
       nextBtn.clickHandler = () => {
         if (nextBtn.disabled) return;
@@ -660,12 +676,17 @@ function showQuestion(idx) {
         handleNext(q.id);
       };
       nextBtn.addEventListener('click', nextBtn.clickHandler);
+      nextBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        nextBtn.clickHandler();
+      }, { passive: false });
     }
   }
   if (idx > 0) {
     const backBtn = document.getElementById('back-btn');
     if (backBtn) {
       backBtn.removeEventListener('click', backBtn.clickHandler);
+      backBtn.removeEventListener('touchend', backBtn.touchHandler);
       
       backBtn.clickHandler = () => {
         if (backBtn.disabled) return;
@@ -675,12 +696,17 @@ function showQuestion(idx) {
         showQuestion(current);
       };
       backBtn.addEventListener('click', backBtn.clickHandler);
+      backBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        backBtn.clickHandler();
+      }, { passive: false });
     }
   }
   // Option buttons - use addEventListener to prevent conflicts
   document.querySelectorAll('.option-btn').forEach(btn => {
     // Remove any existing listeners to prevent duplication
     btn.removeEventListener('click', btn.clickHandler);
+    btn.removeEventListener('touchend', btn.touchHandler);
     
     // Create the click handler function
     btn.clickHandler = () => {
@@ -727,8 +753,12 @@ function showQuestion(idx) {
       }
     };
     
-    // Add click listener - let natural touch behavior handle mobile
+    // Add both click (for desktop) and touchend (for mobile) listeners
     btn.addEventListener('click', btn.clickHandler);
+    btn.addEventListener('touchend', (e) => {
+      e.preventDefault(); // Prevent default touch behavior
+      btn.clickHandler();
+    }, { passive: false });
   });
 }
 
