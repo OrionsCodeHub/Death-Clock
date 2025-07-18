@@ -122,6 +122,13 @@ body {
   min-height: 44px; /* Touch-friendly minimum height */
   min-width: 80px; /* Minimum width for touch targets */
   white-space: nowrap;
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+  -webkit-touch-callout: none; /* Disable callout on long press */
+  -webkit-user-select: none; /* Disable text selection */
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  touch-action: manipulation; /* Optimize for touch */
 }
 .option-btn:hover, .next-btn:hover, .restart-btn:hover {
   background: #fff;
