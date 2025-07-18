@@ -312,11 +312,25 @@ const humanQuestions = [
     text: 'What is your height?',
     input: `<div class="height-input" id="height-input-group">
       <div id="height-imperial">
-        <input type="number" id="height-feet" class="input-field small" placeholder="Feet" min="3" max="8">
-        <input type="number" id="height-inches" class="input-field small" placeholder="Inches" min="0" max="11">
+        <div class="slider-container">
+          <input type="range" id="height-feet" class="height-slider" min="3" max="7" step="1" value="5">
+          <input type="range" id="height-inches" class="height-slider" min="0" max="11" step="1" value="8">
+          <div class="slider-labels">
+            <span>3'0" (91 cm)</span>
+            <span id="height-imperial-display">5'8"</span>
+            <span>7'3" (220 cm)</span>
+          </div>
+        </div>
       </div>
       <div id="height-metric" style="display:none;">
-        <input type="number" id="height-cm" class="input-field" placeholder="Centimeters" min="90" max="250">
+        <div class="slider-container">
+          <input type="range" id="height-cm" class="height-slider" min="100" max="220" step="1" value="173">
+          <div class="slider-labels">
+            <span>100 cm (3'3")</span>
+            <span id="height-metric-display">173 cm</span>
+            <span>220 cm (7'3")</span>
+          </div>
+        </div>
       </div>
       <div class="options" style="margin-top:0.5em;">
         <button class="option-btn" id="height-unit-imperial" data-unit="imperial" style="border:2px solid #fff;">ft/in</button>
@@ -329,10 +343,24 @@ const humanQuestions = [
     text: 'What is your weight?',
     input: `<div class="weight-input" id="weight-input-group">
       <div id="weight-imperial">
-        <input type="number" id="weight-lb" class="input-field" placeholder="Pounds" min="50" max="500">
+        <div class="slider-container">
+          <input type="range" id="weight-lb" class="weight-slider" min="55" max="551" step="1" value="154">
+          <div class="slider-labels">
+            <span>55 lbs (25 kg)</span>
+            <span id="weight-lb-display">154 lbs</span>
+            <span>551 lbs (250 kg)</span>
+          </div>
+        </div>
       </div>
       <div id="weight-metric" style="display:none;">
-        <input type="number" id="weight-kg" class="input-field" placeholder="Kilograms" min="25" max="250">
+        <div class="slider-container">
+          <input type="range" id="weight-kg" class="weight-slider" min="25" max="250" step="1" value="70">
+          <div class="slider-labels">
+            <span>25 kg (55 lbs)</span>
+            <span id="weight-kg-display">70 kg</span>
+            <span>250 kg (551 lbs)</span>
+          </div>
+        </div>
       </div>
       <div class="options" style="margin-top:0.5em;">
         <button class="option-btn" id="weight-unit-imperial" data-unit="imperial" style="border:2px solid #fff;">lb</button>
@@ -676,6 +704,53 @@ function showQuestion(idx) {
         nextBtn.clickHandler();
       }, { passive: false });
     }
+    
+    // Add height slider event listeners
+    const feetSlider = document.getElementById('height-feet');
+    const inchesSlider = document.getElementById('height-inches');
+    const cmSlider = document.getElementById('height-cm');
+    const imperialDisplay = document.getElementById('height-imperial-display');
+    const metricDisplay = document.getElementById('height-metric-display');
+    
+    if (feetSlider && inchesSlider && imperialDisplay) {
+      const updateImperialDisplay = () => {
+        const feet = parseInt(feetSlider.value);
+        const inches = parseInt(inchesSlider.value);
+        imperialDisplay.textContent = `${feet}'${inches}"`;
+        
+        // Update cm slider to match
+        if (cmSlider) {
+          const cmValue = feet * 30.48 + inches * 2.54;
+          cmSlider.value = Math.round(cmValue);
+          if (metricDisplay) {
+            metricDisplay.textContent = Math.round(cmValue) + ' cm';
+          }
+        }
+      };
+      
+      feetSlider.addEventListener('input', updateImperialDisplay);
+      inchesSlider.addEventListener('input', updateImperialDisplay);
+    }
+    
+    if (cmSlider && metricDisplay) {
+      cmSlider.addEventListener('input', function() {
+        const cmValue = parseInt(this.value);
+        metricDisplay.textContent = cmValue + ' cm';
+        
+        // Update imperial sliders to match
+        if (feetSlider && inchesSlider) {
+          const totalInches = cmValue / 2.54;
+          const feet = Math.floor(totalInches / 12);
+          const inches = Math.round(totalInches % 12);
+          
+          feetSlider.value = feet;
+          inchesSlider.value = inches;
+          if (imperialDisplay) {
+            imperialDisplay.textContent = `${feet}'${inches}"`;
+          }
+        }
+      });
+    }
   }
   if (q.id === 'weight') {
     const nextBtn = document.getElementById('next-btn');
@@ -696,7 +771,7 @@ function showQuestion(idx) {
       }, { passive: false });
     }
     
-    // Add slider event listeners
+    // Add human weight slider event listeners
     const lbSlider = document.getElementById('weight-lb');
     const kgSlider = document.getElementById('weight-kg');
     const lbDisplay = document.getElementById('weight-lb-display');
@@ -704,15 +779,15 @@ function showQuestion(idx) {
     
     if (lbSlider && lbDisplay) {
       lbSlider.addEventListener('input', function() {
-        const value = parseFloat(this.value);
-        lbDisplay.textContent = value.toFixed(2) + ' lbs';
+        const value = parseInt(this.value);
+        lbDisplay.textContent = value + ' lbs';
         
         // Update kg slider to match
         if (kgSlider) {
-          const kgValue = value * 0.453592;
-          kgSlider.value = kgValue.toFixed(2);
+          const kgValue = Math.round(value * 0.453592);
+          kgSlider.value = kgValue;
           if (kgDisplay) {
-            kgDisplay.textContent = kgValue.toFixed(2) + ' kg';
+            kgDisplay.textContent = kgValue + ' kg';
           }
         }
       });
@@ -720,15 +795,15 @@ function showQuestion(idx) {
     
     if (kgSlider && kgDisplay) {
       kgSlider.addEventListener('input', function() {
-        const value = parseFloat(this.value);
-        kgDisplay.textContent = value.toFixed(2) + ' kg';
+        const value = parseInt(this.value);
+        kgDisplay.textContent = value + ' kg';
         
         // Update lb slider to match
         if (lbSlider) {
-          const lbValue = value * 2.20462;
-          lbSlider.value = lbValue.toFixed(2);
+          const lbValue = Math.round(value * 2.20462);
+          lbSlider.value = lbValue;
           if (lbDisplay) {
-            lbDisplay.textContent = lbValue.toFixed(2) + ' lbs';
+            lbDisplay.textContent = lbValue + ' lbs';
           }
         }
       });
@@ -1298,6 +1373,9 @@ function showResults() {
     // For rats, show weight instead of BMI
     document.getElementById('bmi-label').textContent = 'Your Weight';
     document.getElementById('bmi-result').textContent = (answers.weight * 2.20462).toFixed(2) + ' lbs';
+    
+    // Show stats for rats
+    document.querySelector('.stats').style.display = '';
     
     // Show Discord username if used
     if (answers.discordUsername) {
