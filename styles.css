@@ -128,7 +128,7 @@ body {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  touch-action: auto; /* Allow natural touch behavior */
+  touch-action: manipulation; /* Optimize for touch but allow hold behavior */
 }
 .option-btn:hover, .next-btn:hover, .restart-btn:hover {
   background: #fff;
