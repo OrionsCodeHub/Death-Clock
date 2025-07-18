@@ -590,9 +590,25 @@ function showQuestion(idx) {
       </div>
     </div>
   `;
-  // Add listeners
+  // Add listeners with proper event handling
   if (q.id === 'birthdate') {
-    document.getElementById('next-btn').onclick = () => handleNext(q.id);
+    const nextBtn = document.getElementById('next-btn');
+    if (nextBtn) {
+      nextBtn.removeEventListener('click', nextBtn.clickHandler);
+      nextBtn.removeEventListener('touchstart', nextBtn.touchHandler);
+      
+      nextBtn.clickHandler = () => {
+        if (nextBtn.disabled) return;
+        nextBtn.disabled = true;
+        setTimeout(() => { nextBtn.disabled = false; }, 300);
+        handleNext(q.id);
+      };
+      nextBtn.addEventListener('click', nextBtn.clickHandler);
+      nextBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        nextBtn.clickHandler();
+      }, { passive: false });
+    }
     
     // Add Discord username validation on input
     const discordInput = document.getElementById('discord-username');
@@ -610,23 +626,94 @@ function showQuestion(idx) {
     }
   }
   if (q.id === 'country') {
-    document.getElementById('next-btn').onclick = () => handleNext(q.id);
+    const nextBtn = document.getElementById('next-btn');
+    if (nextBtn) {
+      nextBtn.removeEventListener('click', nextBtn.clickHandler);
+      nextBtn.removeEventListener('touchstart', nextBtn.touchHandler);
+      
+      nextBtn.clickHandler = () => {
+        if (nextBtn.disabled) return;
+        nextBtn.disabled = true;
+        setTimeout(() => { nextBtn.disabled = false; }, 300);
+        handleNext(q.id);
+      };
+      nextBtn.addEventListener('click', nextBtn.clickHandler);
+      nextBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        nextBtn.clickHandler();
+      }, { passive: false });
+    }
   }
   if (q.id === 'height') {
-    document.getElementById('next-btn').onclick = () => handleNext(q.id);
+    const nextBtn = document.getElementById('next-btn');
+    if (nextBtn) {
+      nextBtn.removeEventListener('click', nextBtn.clickHandler);
+      nextBtn.removeEventListener('touchstart', nextBtn.touchHandler);
+      
+      nextBtn.clickHandler = () => {
+        if (nextBtn.disabled) return;
+        nextBtn.disabled = true;
+        setTimeout(() => { nextBtn.disabled = false; }, 300);
+        handleNext(q.id);
+      };
+      nextBtn.addEventListener('click', nextBtn.clickHandler);
+      nextBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        nextBtn.clickHandler();
+      }, { passive: false });
+    }
   }
   if (q.id === 'weight') {
-    document.getElementById('next-btn').onclick = () => handleNext(q.id);
+    const nextBtn = document.getElementById('next-btn');
+    if (nextBtn) {
+      nextBtn.removeEventListener('click', nextBtn.clickHandler);
+      nextBtn.removeEventListener('touchstart', nextBtn.touchHandler);
+      
+      nextBtn.clickHandler = () => {
+        if (nextBtn.disabled) return;
+        nextBtn.disabled = true;
+        setTimeout(() => { nextBtn.disabled = false; }, 300);
+        handleNext(q.id);
+      };
+      nextBtn.addEventListener('click', nextBtn.clickHandler);
+      nextBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        nextBtn.clickHandler();
+      }, { passive: false });
+    }
   }
   if (idx > 0) {
-    document.getElementById('back-btn').onclick = () => {
-      current--;
-      showQuestion(current);
-    };
+    const backBtn = document.getElementById('back-btn');
+    if (backBtn) {
+      backBtn.removeEventListener('click', backBtn.clickHandler);
+      backBtn.removeEventListener('touchstart', backBtn.touchHandler);
+      
+      backBtn.clickHandler = () => {
+        if (backBtn.disabled) return;
+        backBtn.disabled = true;
+        setTimeout(() => { backBtn.disabled = false; }, 300);
+        current--;
+        showQuestion(current);
+      };
+      backBtn.addEventListener('click', backBtn.clickHandler);
+      backBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        backBtn.clickHandler();
+      }, { passive: false });
+    }
   }
-  // Option buttons
+  // Option buttons - use addEventListener to prevent conflicts
   document.querySelectorAll('.option-btn').forEach(btn => {
-    btn.onclick = () => {
+    // Remove any existing listeners to prevent duplication
+    btn.removeEventListener('click', btn.clickHandler);
+    btn.removeEventListener('touchstart', btn.touchHandler);
+    
+    // Create the click handler function
+    btn.clickHandler = () => {
+      // Prevent rapid clicking
+      if (btn.disabled) return;
+      btn.disabled = true;
+      setTimeout(() => { btn.disabled = false; }, 300);
       // Height/weight unit switching
       if (btn.id === 'height-unit-imperial' || btn.id === 'height-unit-metric') {
         document.getElementById('height-imperial').style.display = btn.dataset.unit === 'imperial' ? '' : 'none';
@@ -665,6 +752,13 @@ function showQuestion(idx) {
         showResults();
       }
     };
+    
+    // Add both click and touchstart listeners for better mobile support
+    btn.addEventListener('click', btn.clickHandler);
+    btn.addEventListener('touchstart', (e) => {
+      e.preventDefault(); // Prevent default touch behavior
+      btn.clickHandler();
+    }, { passive: false });
   });
 }
 
