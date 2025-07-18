@@ -592,10 +592,7 @@ function showQuestion(idx) {
   `;
   // Add listeners
   if (q.id === 'birthdate') {
-    const nextBtn = document.getElementById('next-btn');
-    nextBtn.onclick = () => handleNext(q.id);
-    nextBtn.addEventListener('selectstart', (e) => e.preventDefault());
-    nextBtn.addEventListener('mousedown', (e) => e.preventDefault());
+    document.getElementById('next-btn').onclick = () => handleNext(q.id);
     
     // Add Discord username validation on input
     const discordInput = document.getElementById('discord-username');
@@ -613,38 +610,22 @@ function showQuestion(idx) {
     }
   }
   if (q.id === 'country') {
-    const nextBtn = document.getElementById('next-btn');
-    nextBtn.onclick = () => handleNext(q.id);
-    nextBtn.addEventListener('selectstart', (e) => e.preventDefault());
-    nextBtn.addEventListener('mousedown', (e) => e.preventDefault());
+    document.getElementById('next-btn').onclick = () => handleNext(q.id);
   }
   if (q.id === 'height') {
-    const nextBtn = document.getElementById('next-btn');
-    nextBtn.onclick = () => handleNext(q.id);
-    nextBtn.addEventListener('selectstart', (e) => e.preventDefault());
-    nextBtn.addEventListener('mousedown', (e) => e.preventDefault());
+    document.getElementById('next-btn').onclick = () => handleNext(q.id);
   }
   if (q.id === 'weight') {
-    const nextBtn = document.getElementById('next-btn');
-    nextBtn.onclick = () => handleNext(q.id);
-    nextBtn.addEventListener('selectstart', (e) => e.preventDefault());
-    nextBtn.addEventListener('mousedown', (e) => e.preventDefault());
+    document.getElementById('next-btn').onclick = () => handleNext(q.id);
   }
   if (idx > 0) {
-    const backBtn = document.getElementById('back-btn');
-    backBtn.onclick = () => {
+    document.getElementById('back-btn').onclick = () => {
       current--;
       showQuestion(current);
     };
-    backBtn.addEventListener('selectstart', (e) => e.preventDefault());
-    backBtn.addEventListener('mousedown', (e) => e.preventDefault());
   }
   // Option buttons
   document.querySelectorAll('.option-btn').forEach(btn => {
-    // Prevent text selection on buttons
-    btn.addEventListener('selectstart', (e) => e.preventDefault());
-    btn.addEventListener('mousedown', (e) => e.preventDefault());
-    
     btn.onclick = () => {
       // Height/weight unit switching
       if (btn.id === 'height-unit-imperial' || btn.id === 'height-unit-metric') {
@@ -1114,18 +1095,4 @@ function restartQuiz() {
 
 window.onload = () => {
   showQuestion(0);
-  
-  // Prevent text selection globally
-  document.addEventListener('selectstart', (e) => {
-    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-      e.preventDefault();
-    }
-  });
-  
-  // Prevent unwanted touch highlights
-  document.addEventListener('touchstart', (e) => {
-    if (e.target.tagName === 'BUTTON') {
-      e.preventDefault();
-    }
-  }, { passive: false });
 }; 
