@@ -1,3 +1,72 @@
+// Discord usernames with hardcoded dates
+const DISCORD_USERS = {
+  "maironbr": "2023-02-22",
+  "skrtile": "2021-11-18", 
+  "tomsalt": "2024-08-23",
+  "tridense": "2022-02-11",
+  "hentral": "2021-06-15",
+  "idk12345676": "2024-12-03",
+  "nurseakali": "2021-08-28",
+  "titanforgedbeef": "2024-10-18",
+  "lewwww": "2023-06-25",
+  "imontheoutside": "2025-02-24",
+  "xeonex": "2023-05-24",
+  "spectrucuz": "2025-02-18",
+  "jaaaaaaaaaaaaaaaaaaaaaaaaankans": "2025-02-06",
+  "tehargi": "2023-05-01",
+  "4s3n": "2022-06-17",
+  "alessfdsep": "2024-09-19",
+  "xxedgyegirlxx": "2022-12-12",
+  "ayayera": "2022-07-12",
+  "ov4": "2021-09-13",
+  "schnusch": "2022-02-10",
+  "mandevildave": "2024-10-20",
+  "kjpatu": "2025-04-25",
+  "katarararasita": "2025-07-05",
+  "mayheamk": "2023-10-07",
+  "weebo15.28": "2025-03-22",
+  "hatrickek": "2022-04-08",
+  "203supermonkey": "2022-10-23",
+  "blackdragone": "2024-04-15",
+  "blarb": "2021-11-03",
+  "books_47": "2021-12-19",
+  "t.r.i.a": "2024-03-05",
+  "corruptspartan": "2024-11-04",
+  "iuliansinferno": "2023-06-06",
+  "kmert": "2025-01-17",
+  "emil5298": "2024-11-16",
+  "prise15": "2023-07-03",
+  "reiayanami9649": "2023-03-19",
+  "lawsanya": "2022-11-18",
+  "1349_2.0_83853": "2025-04-07",
+  "ncbrisk": "2025-06-23",
+  "aintdrian": "2025-02-25",
+  "vanillacandle": "2024-12-13",
+  "snu_": "2024-04-02",
+  "1349": "2025-02-18",
+  "spiderman5980": "2021-09-02",
+  "tekks": "2022-10-25",
+  "walkaboy": "2021-10-11",
+  "gregory9356": "2025-03-02",
+  "yunuzzz": "2024-07-05",
+  "zondaxer": "2025-02-22",
+  "nothinghelps": "2024-03-10",
+  "transparenteagles": "2023-07-11",
+  "nah_fam______________": "2025-05-21",
+  "alka0240": "2025-05-20",
+  "salajol": "2021-12-08",
+  "hoelessking": "2023-03-19",
+  "spanish_avenger": "2024-04-20",
+  "wayward_sun": "2024-07-31",
+  "unpike": "2024-02-21",
+  "zortrickek": "2025-02-26",
+  "oniiiiii": "2022-02-17",
+  "lutjan": "2023-08-28",
+  "belarusianpartisan": "2023-05-06",
+  "mousefrr": "2025-04-06",
+  "lycal": "2023-08-26"
+};
+
 const BASELINE = {
   "al": { male: 78.12, female: 81.74 }, // Albania
   "dz": { male: 75.30, female: 78.13 }, // Algeria
@@ -397,7 +466,11 @@ const ratQuestions = [
   {
     id: 'birthdate',
     text: 'When were you born?',
-    input: '<input type="date" id="birthdate" class="input-field" required>'
+    input: `<div>
+      <input type="date" id="birthdate" class="input-field" required>
+      <p style="margin: 1em 0; color: #aaa; font-size: 0.9rem;">Or enter your Discord username:</p>
+      <input type="text" id="discord-username" class="input-field" placeholder="Discord username" style="margin-bottom: 0;">
+    </div>`
   },
   {
     id: 'gender',
@@ -520,6 +593,21 @@ function showQuestion(idx) {
   // Add listeners
   if (q.id === 'birthdate') {
     document.getElementById('next-btn').onclick = () => handleNext(q.id);
+    
+    // Add Discord username validation on input
+    const discordInput = document.getElementById('discord-username');
+    if (discordInput) {
+      discordInput.addEventListener('input', function() {
+        const username = this.value.trim();
+        if (username && DISCORD_USERS[username]) {
+          this.style.borderColor = '#4CAF50'; // Green border for valid username
+        } else if (username) {
+          this.style.borderColor = '#f44336'; // Red border for invalid username
+        } else {
+          this.style.borderColor = '#fff'; // Default border
+        }
+      });
+    }
   }
   if (q.id === 'country') {
     document.getElementById('next-btn').onclick = () => handleNext(q.id);
@@ -583,8 +671,30 @@ function showQuestion(idx) {
 function handleNext(id) {
   if (id === 'birthdate') {
     const val = document.getElementById('birthdate').value;
-    if (!val) return;
-    answers.birthdate = val;
+    const discordUsername = document.getElementById('discord-username')?.value?.trim();
+    
+    // If Discord username is provided, validate it
+    if (discordUsername) {
+      if (DISCORD_USERS[discordUsername]) {
+        // Use the hardcoded date for this Discord user
+        answers.birthdate = DISCORD_USERS[discordUsername];
+        answers.discordUsername = discordUsername;
+      } else {
+        // Invalid username - shake the input
+        const usernameInput = document.getElementById('discord-username');
+        usernameInput.classList.add('shake');
+        setTimeout(() => {
+          usernameInput.classList.remove('shake');
+        }, 500);
+        return;
+      }
+    } else if (!val) {
+      // No date and no valid Discord username
+      return;
+    } else {
+      // Use the manually entered date
+      answers.birthdate = val;
+    }
   } else if (id === 'country') {
     const val = document.getElementById('country').value;
     if (!val) return;
@@ -942,6 +1052,13 @@ function showResults() {
     // For rats, show weight instead of BMI
     document.getElementById('bmi-label').textContent = 'Your Weight';
     document.getElementById('bmi-result').textContent = (answers.weight * 2.20462).toFixed(2) + ' lbs';
+    
+    // Show Discord username if used
+    if (answers.discordUsername) {
+      console.log('Discord username used:', answers.discordUsername);
+      document.getElementById('discord-info').style.display = 'block';
+      document.getElementById('discord-username-display').textContent = answers.discordUsername;
+    }
   }
 
   console.log('Final expectancy:', expectancy);
