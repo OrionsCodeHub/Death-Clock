@@ -9,6 +9,7 @@ body {
   justify-content: center;
   padding: 1rem;
   box-sizing: border-box;
+  width: 100%;
 }
 
 .container {
@@ -25,9 +26,12 @@ body {
   box-shadow: none;
   padding: 0;
   min-width: 280px;
-  max-width: 100%;
+  max-width: 600px;
   width: 100%;
   transition: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .question-container {
@@ -35,37 +39,22 @@ body {
   flex-direction: column;
   align-items: center;
   width: 100%;
+  max-width: 600px;
+  text-align: center;
 }
 
 .title {
-  font-size: 2.5rem;
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
   font-weight: 600;
   margin-bottom: 0.5em;
   letter-spacing: 0.04em;
   text-shadow: none;
   text-align: center;
-}
-
-.question-step h2 {
-  text-align: center !important;
-  margin-bottom: 1.5em;
-  font-size: 1.5rem;
-  font-weight: 500;
-  width: 100%;
-  display: block;
-}
-
-#questions h2 {
-  text-align: center !important;
-  margin-bottom: 1.5em;
-  font-size: 1.5rem;
-  font-weight: 500;
-  width: 100%;
-  display: block;
+  line-height: 1.2;
 }
 
 .subtitle {
-  font-size: 1.1rem;
+  font-size: clamp(0.9rem, 3vw, 1.1rem);
   color: #aaa;
   margin-bottom: 2em;
   font-weight: 400;
@@ -74,6 +63,7 @@ body {
 
 #questions > * {
   animation: fadeIn 0.7s cubic-bezier(.4,0,.2,1);
+  width: 100%;
 }
 
 @keyframes fadeIn {
@@ -86,15 +76,14 @@ body {
   border: 1px solid #fff;
   border-radius: 0;
   color: #fff;
-  font-size: 1.1rem;
+  font-size: clamp(1rem, 4vw, 1.1rem);
   padding: 0.7em 1em;
   margin: 1em 0 1.5em 0;
   width: 100%;
   box-sizing: border-box;
   outline: none;
   transition: border 0.2s;
-  position: relative;
-  z-index: 1;
+  min-height: 44px; /* Touch-friendly minimum height */
 }
 .input-field:focus {
   border: 1.5px solid #fff;
@@ -103,11 +92,10 @@ body {
 .options {
   display: flex;
   flex-wrap: wrap;
-  gap: 1em;
+  gap: 0.8em;
   margin: 1.5em 0 2em 0;
   justify-content: center;
-  position: relative;
-  z-index: 10;
+  width: 100%;
 }
 
 .button-container {
@@ -124,17 +112,16 @@ body {
   color: #fff;
   border: 2px solid #fff;
   border-radius: 0;
-  font-size: 1.1rem;
+  font-size: clamp(0.9rem, 3.5vw, 1.1rem);
   font-family: inherit;
-  padding: 0.7em 2em;
+  padding: 0.7em 1.5em;
   margin: 0.5em 0;
   cursor: pointer;
   box-shadow: none;
   transition: background 0.2s, color 0.2s, border 0.2s, transform 0.15s;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
+  min-height: 44px; /* Touch-friendly minimum height */
+  min-width: 80px; /* Minimum width for touch targets */
   white-space: nowrap;
-  min-width: 80px;
 }
 .option-btn:hover, .next-btn:hover, .restart-btn:hover {
   background: #fff;
@@ -142,38 +129,27 @@ body {
   border: 2px solid #fff;
   transform: translateY(-2px) scale(1.04);
 }
-.option-btn:active, .next-btn:active, .restart-btn:active {
-  background: #fff;
-  color: #000;
-  border: 2px solid #fff;
-  transform: translateY(0) scale(0.98);
-}
 
 .height-input, .weight-input {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1em;
+  gap: 0.8em;
+  justify-content: center;
   margin-bottom: 1.5em;
+  flex-wrap: wrap;
   width: 100%;
 }
 .input-field.small {
   width: 80px;
-}
-#height-imperial {
-  display: flex;
-  gap: 0.5em;
-  justify-content: center;
-  margin-bottom: 0.5em;
-  flex-wrap: wrap;
-}
-#height-metric {
-  margin-bottom: 0.5em;
+  min-width: 60px;
+  flex: 0 0 auto;
 }
 
 .results {
   display: none;
   width: 100%;
+  max-width: 600px;
+  justify-content: center;
+  align-items: center;
 }
 .results.active {
   display: block;
@@ -184,6 +160,7 @@ body {
   flex-direction: column;
   align-items: center;
   width: 100%;
+  text-align: center;
 }
 
 .death-clock {
@@ -194,22 +171,25 @@ body {
 }
 .clock-face {
   display: flex;
-  gap: 2em;
+  gap: clamp(1em, 4vw, 2em);
   flex-wrap: wrap;
   justify-content: center;
+  width: 100%;
 }
 .time-display {
   display: flex;
   flex-direction: column;
   align-items: center;
   min-width: 80px;
+  flex: 1;
 }
 .time-display span {
-  font-size: 2.2rem;
+  font-size: clamp(1.5rem, 6vw, 2.2rem);
   font-weight: 600;
+  line-height: 1.2;
 }
 .time-label {
-  font-size: 1rem;
+  font-size: clamp(0.8rem, 2.5vw, 1rem);
   color: #aaa;
   margin-top: 0.2em;
   text-align: center;
@@ -217,7 +197,7 @@ body {
 
 .stats {
   display: flex;
-  gap: 2em;
+  gap: clamp(1em, 3vw, 2em);
   justify-content: center;
   margin: 2em 0 1em 0;
   flex-wrap: wrap;
@@ -226,99 +206,88 @@ body {
 .stat-item {
   background: none;
   border-radius: 0;
-  padding: 1em 2em;
+  padding: 1em 1.5em;
   box-shadow: none;
   text-align: center;
+  flex: 1;
   min-width: 120px;
+  max-width: 200px;
+}
+.stat-item h3 {
+  font-size: clamp(0.9rem, 3vw, 1.1rem);
+  margin-bottom: 0.5em;
+  line-height: 1.3;
+}
+.stat-item p {
+  font-size: clamp(1rem, 3.5vw, 1.2rem);
+  margin: 0;
+  line-height: 1.2;
 }
 
 .hidden {
   display: none !important;
 }
 
-/* Mobile Responsive Design */
+/* Mobile-specific optimizations */
 @media (max-width: 768px) {
   body {
     padding: 0.5rem;
   }
   
-  .title {
-    font-size: 2rem;
-    margin-bottom: 0.3em;
-  }
-  
-  .subtitle {
-    font-size: 1rem;
-    margin-bottom: 1.5em;
-  }
-  
-  .question-step h2,
-  #questions h2 {
-    font-size: 1.3rem;
-    margin-bottom: 1em;
-  }
-  
-  .input-field {
-    font-size: 1rem;
-    padding: 0.6em 0.8em;
-  }
-  
-  .option-btn, .next-btn, .restart-btn {
-    font-size: 1rem;
-    padding: 0.6em 1.5em;
-    margin: 0.3em 0;
+  .questionnaire, .results {
+    min-width: 250px;
+    max-width: 100vw;
   }
   
   .options {
-    gap: 0.8em;
-    margin: 1em 0 1.5em 0;
+    gap: 0.6em;
+  }
+  
+  .option-btn, .next-btn, .restart-btn {
+    padding: 0.8em 1.2em;
+    font-size: 0.95rem;
   }
   
   .button-container {
-    margin-top: 1.5em;
-    gap: 0.5rem;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .button-container .option-btn {
+    width: 100%;
+    max-width: 300px;
   }
   
   .clock-face {
     gap: 1em;
   }
   
-  .time-display span {
-    font-size: 1.8rem;
-  }
-  
-  .time-label {
-    font-size: 0.9rem;
-  }
-  
   .stats {
     gap: 1em;
-    margin: 1.5em 0 1em 0;
   }
   
   .stat-item {
-    padding: 0.8em 1.5em;
     min-width: 100px;
+    padding: 0.8em 1em;
   }
   
-  .stat-item h3 {
-    font-size: 0.9rem;
-    margin-bottom: 0.3em;
+  .height-input, .weight-input {
+    gap: 0.5em;
   }
   
-  .stat-item p {
-    font-size: 1rem;
+  .input-field.small {
+    width: 70px;
+    min-width: 50px;
   }
 }
 
 @media (max-width: 480px) {
   .title {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
   }
   
-  .question-step h2,
-  #questions h2 {
-    font-size: 1.2rem;
+  .subtitle {
+    font-size: 0.85rem;
   }
   
   .clock-face {
@@ -326,31 +295,21 @@ body {
   }
   
   .time-display span {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
   }
   
   .time-label {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
   
   .stats {
     flex-direction: column;
-    gap: 0.8em;
+    align-items: center;
   }
   
   .stat-item {
     width: 100%;
-    min-width: auto;
-  }
-  
-  .button-container {
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-  
-  .option-btn, .next-btn, .restart-btn {
-    width: 100%;
-    max-width: 200px;
+    max-width: 250px;
   }
   
   .options {
@@ -361,5 +320,17 @@ body {
   .option-btn {
     width: 100%;
     max-width: 250px;
+  }
+}
+
+/* Ensure touch targets are large enough */
+@media (hover: none) and (pointer: coarse) {
+  .option-btn, .next-btn, .restart-btn {
+    min-height: 48px;
+    min-width: 88px;
+  }
+  
+  .input-field {
+    min-height: 48px;
   }
 } 
