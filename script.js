@@ -987,6 +987,14 @@ function showResults() {
   document.getElementById('results').classList.remove('hidden');
   document.getElementById('results').classList.add('active');
 
+  // Set the title based on species
+  const titleElement = document.querySelector('.result-container .title');
+  if (isHuman) {
+    titleElement.textContent = 'Your Human Death Clock';
+  } else {
+    titleElement.textContent = 'Your Rat Death Clock';
+  }
+
   // Hide all stats by default, will show if not early BMI exit
   document.querySelector('.stats').style.display = 'none';
   document.getElementById('discord-info').style.display = 'none';
@@ -1412,11 +1420,10 @@ function showResults() {
     // Show stats for rats
     document.querySelector('.stats').style.display = '';
     
-    // Show Discord username if used
-    if (answers.discordUsername) {
-      console.log('Discord username used:', answers.discordUsername);
-      document.getElementById('discord-info').style.display = 'block';
-      document.getElementById('discord-username-display').textContent = answers.discordUsername;
+    // Show birth date for rats
+    if (answers.birthdate) {
+      const birthDate = new Date(answers.birthdate);
+      document.getElementById('birth-date').textContent = birthDate.toDateString();
     }
   }
 
@@ -1454,6 +1461,9 @@ function showResults() {
 
   // PRIVACY: Handle display for humans
   if (isHuman) {
+    // Hide birth date for humans (only show for rats)
+    document.querySelector('.stat-item:nth-child(3)').style.display = 'none';
+    
     if (privacyMode) {
       // Hide the entire Life Expectancy and BMI sections
       document.querySelector('.stat-item:nth-child(1)').style.display = 'none';
