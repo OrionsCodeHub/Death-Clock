@@ -493,9 +493,16 @@ const humanQuestions = [
 const ratQuestions = [
   {
     id: 'birthdate',
-    text: 'When were you born?',
-    input: `<div>
-      <input type="date" id="birthdate" class="input-field" required>
+    text: 'How old are you?',
+    input: `<div class="age-input" id="age-input-group">
+      <div class="slider-container">
+        <input type="range" id="age-months" class="age-slider" min="0" max="48" step="1" value="12">
+        <div class="slider-labels">
+          <span>0 months (newborn)</span>
+          <span id="age-display">1 year</span>
+          <span>4 years (48 months)</span>
+        </div>
+      </div>
       <p style="margin: 1em 0; color: #aaa; font-size: 0.9rem;">Or enter your Discord username:</p>
       <input type="text" id="discord-username" class="input-field" placeholder="Discord username" style="margin-bottom: 0;">
     </div>`
@@ -810,6 +817,41 @@ function showQuestion(idx) {
       });
     }
   }
+  
+  // Add rat age slider event listener
+  if (q.id === 'birthdate' && !isHuman) {
+    const ageSlider = document.getElementById('age-months');
+    const ageDisplay = document.getElementById('age-display');
+    
+    if (ageSlider && ageDisplay) {
+      ageSlider.addEventListener('input', function() {
+        const months = parseInt(this.value);
+        let displayText;
+        
+        if (months === 0) {
+          displayText = 'newborn';
+        } else if (months < 12) {
+          displayText = `${months} month${months === 1 ? '' : 's'}`;
+        } else if (months === 12) {
+          displayText = '1 year';
+        } else {
+          const years = Math.floor(months / 12);
+          const remainingMonths = months % 12;
+          if (remainingMonths === 0) {
+            displayText = `${years} year${years === 1 ? '' : 's'}`;
+          } else {
+            displayText = `${years} year${years === 1 ? '' : 's'} ${remainingMonths} month${remainingMonths === 1 ? '' : 's'}`;
+          }
+        }
+        
+        ageDisplay.textContent = displayText;
+      });
+      
+      // Trigger initial display
+      ageSlider.dispatchEvent(new Event('input'));
+    }
+  }
+  
   if (idx > 0) {
     const backBtn = document.getElementById('back-btn');
     if (backBtn) {
@@ -892,49 +934,82 @@ function showQuestion(idx) {
 
 function handleNext(id) {
   if (id === 'birthdate') {
-    const val = document.getElementById('birthdate').value;
-    const discordUsername = document.getElementById('discord-username')?.value?.trim();
-    
-    // If Discord username is provided, validate it
-    if (discordUsername) {
-      if (DISCORD_USERS[discordUsername]) {
-        // Use the hardcoded date for this Discord user
-        answers.birthdate = DISCORD_USERS[discordUsername];
-        answers.discordUsername = discordUsername;
+    if (isHuman) {
+      // Human birthdate handling
+      const val = document.getElementById('birthdate').value;
+      const discordUsername = document.getElementById('discord-username')?.value?.trim();
+      
+      // If Discord username is provided, validate it
+      if (discordUsername) {
+        if (DISCORD_USERS[discordUsername]) {
+          // Use the hardcoded date for this Discord user
+          answers.birthdate = DISCORD_USERS[discordUsername];
+          answers.discordUsername = discordUsername;
+        } else {
+          // Invalid username - shake the input
+          const usernameInput = document.getElementById('discord-username');
+          usernameInput.classList.add('shake');
+          setTimeout(() => {
+            usernameInput.classList.remove('shake');
+          }, 500);
+          return;
+        }
+      } else if (!val) {
+        // No date and no valid Discord username
+        return;
       } else {
-        // Invalid username - shake the input
-        const usernameInput = document.getElementById('discord-username');
-        usernameInput.classList.add('shake');
-        setTimeout(() => {
-          usernameInput.classList.remove('shake');
-        }, 500);
-        return;
+        // Use the manually entered date
+        answers.birthdate = val;
+        
+        // Validate age (must be between 18 and 100)
+        const birthDate = new Date(val);
+        const now = new Date();
+        const age = now.getFullYear() - birthDate.getFullYear();
+        const monthDiff = now.getMonth() - birthDate.getMonth();
+        const dayDiff = now.getDate() - birthDate.getDate();
+        
+        // Adjust age if birthday hasn't occurred this year
+        const adjustedAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
+        
+        if (adjustedAge < 18 || adjustedAge > 60) {
+          // Invalid age - shake the input
+          const birthdateInput = document.getElementById('birthdate');
+          birthdateInput.classList.add('shake');
+          setTimeout(() => {
+            birthdateInput.classList.remove('shake');
+          }, 500);
+          return;
+        }
       }
-    } else if (!val) {
-      // No date and no valid Discord username
-      return;
     } else {
-      // Use the manually entered date
-      answers.birthdate = val;
+      // Rat age handling
+      const ageMonths = document.getElementById('age-months')?.value;
+      const discordUsername = document.getElementById('discord-username')?.value?.trim();
       
-      // Validate age (must be between 18 and 100)
-      const birthDate = new Date(val);
-      const now = new Date();
-      const age = now.getFullYear() - birthDate.getFullYear();
-      const monthDiff = now.getMonth() - birthDate.getMonth();
-      const dayDiff = now.getDate() - birthDate.getDate();
-      
-      // Adjust age if birthday hasn't occurred this year
-      const adjustedAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
-      
-      if (adjustedAge < 18 || adjustedAge > 60) {
-        // Invalid age - shake the input
-        const birthdateInput = document.getElementById('birthdate');
-        birthdateInput.classList.add('shake');
-        setTimeout(() => {
-          birthdateInput.classList.remove('shake');
-        }, 500);
+      // If Discord username is provided, validate it
+      if (discordUsername) {
+        if (DISCORD_USERS[discordUsername]) {
+          // Use the hardcoded date for this Discord user
+          answers.birthdate = DISCORD_USERS[discordUsername];
+          answers.discordUsername = discordUsername;
+        } else {
+          // Invalid username - shake the input
+          const usernameInput = document.getElementById('discord-username');
+          usernameInput.classList.add('shake');
+          setTimeout(() => {
+            usernameInput.classList.remove('shake');
+          }, 500);
+          return;
+        }
+      } else if (!ageMonths) {
+        // No age selected
         return;
+      } else {
+        // Calculate birth date from age in months (max 4 years = 48 months)
+        const now = new Date();
+        const monthsAgo = parseInt(ageMonths);
+        const birthDate = new Date(now.getFullYear(), now.getMonth() - monthsAgo, now.getDate());
+        answers.birthdate = birthDate.toISOString().split('T')[0];
       }
     }
   } else if (id === 'country') {
